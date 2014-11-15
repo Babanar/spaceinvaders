@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import Player.PlayerShip;
+
 import entities.AlienEntity;
 import entities.Entity;
 import entities.ShipEntity;
@@ -47,27 +49,15 @@ public class Game extends Canvas {
 	/** The list of entities that need to be removed from the game this loop */
 	private ArrayList<Entity> removeList = new ArrayList<Entity>();
 	
+	private PlayerShip player;
+	
 	/** The entity representing the player */
-	private Entity ship;
-	/** The speed at which the player's ship should move (pixels/sec) */
-	private double moveSpeed = 300;
-	/** The time at which last fired a shot */
-	private long lastFire = 0;
-	/** The interval between our players shot (ms) */
-	private long firingInterval = 500;
-	/** The number of aliens left on the screen */
 	private int alienCount;
 	
 	/** The message to display which waiting for a key press */
 	private String message = "";
 	/** True if we're holding up game play until a key has been pressed */
 	private boolean waitingForKeyPress = true;
-	/** True if the left cursor key is currently pressed */
-	private boolean leftPressed = false;
-	/** True if the right cursor key is currently pressed */
-	private boolean rightPressed = false;
-	/** True if we are firing */
-	private boolean firePressed = false;
 	/** True if game logic needs to be applied this loop, normally as a result of a game event */
 	private boolean logicRequiredThisLoop = false;
 	
@@ -75,6 +65,8 @@ public class Game extends Canvas {
 	 * Construct our game and set it running.
 	 */
 	public Game() {
+		
+		addKeyListener(InputMonitor.instance);
 		// create a frame to contain our game
 		JFrame container = new JFrame("Space Invaders 101");
 		
@@ -106,7 +98,6 @@ public class Game extends Canvas {
 		
 		// add a key input system (defined below) to our canvas
 		// so we can respond to key pressed
-		addKeyListener(new KeyInputHandler());
 		
 		// request the focus so key events come to us
 		requestFocus();
@@ -130,10 +121,6 @@ public class Game extends Canvas {
 		entities.clear();
 		initEntities();
 		
-		// blank out any keyboard settings we might currently have
-		leftPressed = false;
-		rightPressed = false;
-		firePressed = false;
 	}
 	
 	/**
@@ -142,8 +129,7 @@ public class Game extends Canvas {
 	 */
 	private void initEntities() {
 		// create the player ship and place it roughly in the center of the screen
-		ship = new ShipEntity(this,"sprites/ship.gif",370,550);
-		entities.add(ship);
+		player = new PlayerShip(this);
 		
 		// create a block of aliens (3 rows, by 10 aliens, spaced evenly)
 		alienCount = 0;
@@ -218,16 +204,8 @@ public class Game extends Canvas {
 	 * since we must first check that the player can fire at this 
 	 * point, i.e. has he/she waited long enough between shots
 	 */
-	public void tryToFire() {
-		// check that we have waiting long enough to fire
-		if (System.currentTimeMillis() - lastFire < firingInterval) {
-			return;
-		}
-		
-		// if we waited long enough, create the shot entity, and record the time.
-		lastFire = System.currentTimeMillis();
-		ShotEntity shot = new ShotEntity(this,"sprites/shot.gif",ship.getX()+10,ship.getY()-30);
-		entities.add(shot);
+	public void addEntity(Entity e) {
+		entities.add(e);
 	}
 	
 	/**
@@ -244,33 +222,35 @@ public class Game extends Canvas {
 	public void gameLoop() {
 		long lastLoopTime = System.currentTimeMillis();
 		
-		// keep looping round til the game ends
+		//BOUCLE PRINCIPALE
 		while (gameRunning) {
-			// work out how long its been since the last update, this
-			// will be used to calculate how far the entities should
-			// move this loop
+			
+			// WFKP VERIFICATION
+			if(waitingForKeyPress && !InputMonitor.getListEvent().isEmpty())
+				waitingForKeyPress = false;
+			
+			// DELTA TIME DEPUIS LA DERNIÈRE FRAME
 			long delta = System.currentTimeMillis() - lastLoopTime;
 			lastLoopTime = System.currentTimeMillis();
 			
-			// Get hold of a graphics context for the accelerated 
-			// surface and blank it out
+			// INIT GRAPHIC
 			Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
 			g.setColor(Color.black);
 			g.fillRect(0,0,800,600);
 			
-			// cycle round asking each entity to move itself
+			// UPDATE
 			if (!waitingForKeyPress) {
 				for(Entity entity : entities)
 					entity.move(delta);
+				player.update(delta);
 			}
 			
-			// cycle round drawing all the entities we have in the game
+			// AFFICHAGE
             for(Entity entity : entities)
 				entity.draw(g);
+            player.draw(g);
 			
-			// brute force collisions, compare every entity against
-			// every other entity. If any of them collide notify 
-			// both entities that the collision has occured
+			// COLLISION
 			for (int p=0;p<entities.size();p++) {
 				for (int s=p+1;s<entities.size();s++) {
 					Entity me = entities.get(p);
@@ -314,18 +294,7 @@ public class Game extends Canvas {
 			// resolve the movement of the ship. First assume the ship 
 			// isn't moving. If either cursor key is pressed then
 			// update the movement appropraitely
-			ship.setHorizontalMovement(0);
-			
-			if ((leftPressed) && (!rightPressed)) {
-				ship.setHorizontalMovement(-moveSpeed);
-			} else if ((rightPressed) && (!leftPressed)) {
-				ship.setHorizontalMovement(moveSpeed);
-			}
-			
-			// if we're pressing fire, attempt to fire
-			if (firePressed) {
-				tryToFire();
-			}
+
 			
 			// finally pause for a bit. Note: this should run us at about
 			// 100 fps but on windows this might vary each loop due to
@@ -334,102 +303,6 @@ public class Game extends Canvas {
 		}
 	}
 	
-	/**
-	 * A class to handle keyboard input from the user. The class
-	 * handles both dynamic input during game play, i.e. left/right 
-	 * and shoot, and more static type input (i.e. press any key to
-	 * continue)
-	 * 
-	 * This has been implemented as an inner class more through 
-	 * habbit then anything else. Its perfectly normal to implement
-	 * this as seperate class if slight less convienient.
-	 * 
-	 * @author Kevin Glass
-	 */
-	private class KeyInputHandler extends KeyAdapter {
-		/** The number of key presses we've had while waiting for an "any key" press */
-		private int pressCount = 1;
-		
-		/**
-		 * Notification from AWT that a key has been pressed. Note that
-		 * a key being pressed is equal to being pushed down but *NOT*
-		 * released. Thats where keyTyped() comes in.
-		 *
-		 * @param e The details of the key that was pressed 
-		 */
-		public void keyPressed(KeyEvent e) {
-			// if we're waiting for an "any key" typed then we don't 
-			// want to do anything with just a "press"
-			if (waitingForKeyPress) {
-				return;
-			}
-			
-			
-			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-				leftPressed = true;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-				rightPressed = true;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-				firePressed = true;
-			}
-		} 
-		
-		/**
-		 * Notification from AWT that a key has been released.
-		 *
-		 * @param e The details of the key that was released 
-		 */
-		public void keyReleased(KeyEvent e) {
-			// if we're waiting for an "any key" typed then we don't 
-			// want to do anything with just a "released"
-			if (waitingForKeyPress) {
-				return;
-			}
-			
-			if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-				leftPressed = false;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-				rightPressed = false;
-			}
-			if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-				firePressed = false;
-			}
-		}
-
-		/**
-		 * Notification from AWT that a key has been typed. Note that
-		 * typing a key means to both press and then release it.
-		 *
-		 * @param e The details of the key that was typed. 
-		 */
-		public void keyTyped(KeyEvent e) {
-			// if we're waiting for a "any key" type then
-			// check if we've recieved any recently. We may
-			// have had a keyType() event from the user releasing
-			// the shoot or move keys, hence the use of the "pressCount"
-			// counter.
-			if (waitingForKeyPress) {
-				if (pressCount == 1) {
-					// since we've now recieved our key typed
-					// event we can mark it as such and start 
-					// our new game
-					waitingForKeyPress = false;
-					startGame();
-					pressCount = 0;
-				} else {
-					pressCount++;
-				}
-			}
-			
-			// if we hit escape, then quit the game
-			if (e.getKeyChar() == 27) {
-				System.exit(0);
-			}
-		}
-	}
 	
 	/**
 	 * The entry point into the game. We'll simply create an
