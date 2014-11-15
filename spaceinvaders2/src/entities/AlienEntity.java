@@ -1,7 +1,6 @@
 package entities;
 
-import AlienManager.AlienManager;
-import AlienManager.DeplacementAlien;
+import base.Game;
 
 /**
  * An entity which represents one of our space invader aliens.
@@ -10,10 +9,10 @@ import AlienManager.DeplacementAlien;
  */
 public class AlienEntity extends Entity {
 	/** The speed at which the alient moves horizontally */
-	
+	private double moveSpeed = 75;
 	/** The game in which the entity exists */
-	private DeplacementAlien deplacement;
-	private AlienManager commandant;
+	private Game game;
+	
 	/**
 	 * Create a new alien entity
 	 * 
@@ -22,10 +21,11 @@ public class AlienEntity extends Entity {
 	 * @param x The intial x location of this alien
 	 * @param y The intial y location of this alient
 	 */
-	public AlienEntity(AlienManager am, String ref,int x,int y,DeplacementAlien d) {
+	public AlienEntity(Game game,String ref,int x,int y) {
 		super(ref,x,y);
-		this.commandant = am;
-		this.deplacement = d;
+		
+		this.game = game;
+		dx = -moveSpeed;
 	}
 
 	/**
@@ -36,20 +36,17 @@ public class AlienEntity extends Entity {
 	public void move(long delta) {
 		// if we have reached the left hand side of the screen and
 		// are moving left then request a logic update 
-		if (x < 10) {
-			commandant.collidEdge();
+		if ((dx < 0) && (x < 10)) {
+			game.updateLogic();
 		}
-		// and vice versa, if we have reached the right hand side of 
+		// and vice vesa, if we have reached the right hand side of 
 		// the screen and are moving right, request a logic update
-		if (x > 750) {
-			commandant.collidEdge();
+		if ((dx > 0) && (x > 750)) {
+			game.updateLogic();
 		}
-		
-		if(y>540)
-			commandant.invadesWeWin();
 		
 		// proceed with normal move
-		deplacement.move(this, delta);
+		super.move(delta);
 	}
 	
 	/**
@@ -57,7 +54,16 @@ public class AlienEntity extends Entity {
 	 */
 
 	public void doLogic() {
-
+		// swap over horizontal movement and move down the
+		// screen a bit
+		dx = -dx;
+		y += 10;
+		
+		// if we've reached the bottom of the screen then the player
+		// dies
+		if (y > 570) {
+			game.notifyDeath();
+		}
 	}
 	
 	/**

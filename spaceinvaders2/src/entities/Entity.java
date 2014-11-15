@@ -59,10 +59,7 @@ public abstract class Entity {
 		x += (delta * dx) / 1000;
 		y += (delta * dy) / 1000;
 	}
-	public void moveFixe(double x,double y){
-		this.x+=x;
-		this.y+=y;
-	}
+	
 	/**
 	 * Set the horizontal speed of this entity
 	 * 
@@ -105,10 +102,6 @@ public abstract class Entity {
 	 * @param g The graphics context on which to draw
 	 */
 	public void draw(Graphics g) {
-		if(this instanceof AlienEntity){
-			//System.out.println("Alien :" + x );
-			
-		}
 		sprite.draw(g,(int) x,(int) y);
 	}
 	
