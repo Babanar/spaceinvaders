@@ -1,5 +1,6 @@
 package entities;
 
+import aliens.DeplacementAliens;
 import base.Game;
 
 /**
@@ -13,6 +14,8 @@ public class AlienEntity extends Entity {
 	/** The game in which the entity exists */
 	private Game game;
 	
+	private DeplacementAliens deplacement;
+	
 	/**
 	 * Create a new alien entity
 	 * 
@@ -21,11 +24,12 @@ public class AlienEntity extends Entity {
 	 * @param x The intial x location of this alien
 	 * @param y The intial y location of this alient
 	 */
-	public AlienEntity(Game game,String ref,int x,int y) {
+	public AlienEntity(Game game,String ref,int x,int y,DeplacementAliens da) {
 		super(ref,x,y);
 		
 		this.game = game;
 		dx = -moveSpeed;
+		this.deplacement = da;
 	}
 
 	/**
@@ -34,18 +38,7 @@ public class AlienEntity extends Entity {
 	 * @param delta The time that has elapsed since last move
 	 */
 	public void move(long delta) {
-		// if we have reached the left hand side of the screen and
-		// are moving left then request a logic update 
-		if ((dx < 0) && (x < 10)) {
-			game.updateLogic();
-		}
-		// and vice vesa, if we have reached the right hand side of 
-		// the screen and are moving right, request a logic update
-		if ((dx > 0) && (x > 750)) {
-			game.updateLogic();
-		}
-		
-		// proceed with normal move
+		deplacement.setDirection(this);
 		super.move(delta);
 	}
 	

@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import aliens.UsineAlien;
+
 import Player.PlayerShip;
 
 import entities.AlienEntity;
@@ -51,8 +53,6 @@ public class Game extends Canvas {
 	
 	private PlayerShip player;
 	
-	/** The entity representing the player */
-	private int alienCount;
 	
 	/** The message to display which waiting for a key press */
 	private String message = "";
@@ -61,11 +61,13 @@ public class Game extends Canvas {
 	/** True if game logic needs to be applied this loop, normally as a result of a game event */
 	private boolean logicRequiredThisLoop = false;
 	
+	private UsineAlien aliens;
 	/**
 	 * Construct our game and set it running.
 	 */
 	public Game() {
 		
+		aliens=new UsineAlien(this);
 		addKeyListener(InputMonitor.instance);
 		// create a frame to contain our game
 		JFrame container = new JFrame("Space Invaders 101");
@@ -131,15 +133,8 @@ public class Game extends Canvas {
 		// create the player ship and place it roughly in the center of the screen
 		player = new PlayerShip(this);
 		
-		// create a block of aliens (3 rows, by 10 aliens, spaced evenly)
-		alienCount = 0;
-		for (int row=0;row<3;row++) {
-			for (int x=0;x<10;x++) {
-				Entity alien = new AlienEntity(this,"sprites/alien.gif",100+(x*50),(50)+row*30);
-				entities.add(alien);
-				alienCount++;
-			}
-		}
+		aliens.init();
+		
 	}
 	
 	/**
@@ -178,26 +173,6 @@ public class Game extends Canvas {
 		waitingForKeyPress = true;
 	}
 	
-	/**
-	 * Notification that an alien has been killed
-	 */
-	public void notifyAlienKilled() {
-		// reduce the alient count, if there are none left, the player has won!
-		alienCount--;
-		
-		if (alienCount == 0) {
-			notifyWin();
-		}
-		
-		// if there are still some aliens left then they all need to get faster, so
-		// speed up all the existing aliens
-		for(Entity entity : entities) {
-		    if (entity instanceof AlienEntity) {
-				// speed up by 2%
-				entity.setHorizontalMovement(entity.getHorizontalMovement() * 1.02);
-			}
-		}
-	}
 	
 	/**
 	 * Attempt to fire a shot from the player. Its called "try"
@@ -243,12 +218,8 @@ public class Game extends Canvas {
 				for(Entity entity : entities)
 					entity.move(delta);
 				player.update(delta);
+				aliens.update(delta);
 			}
-			
-			// AFFICHAGE
-            for(Entity entity : entities)
-				entity.draw(g);
-            player.draw(g);
 			
 			// COLLISION
 			for (int p=0;p<entities.size();p++) {
@@ -262,6 +233,12 @@ public class Game extends Canvas {
 					}
 				}
 			}
+			
+			// AFFICHAGE
+            for(Entity entity : entities)
+				entity.draw(g);
+            player.draw(g);
+            aliens.draw(g);
 			
 			// remove any entity that has been marked for clear up
 			entities.removeAll(removeList);

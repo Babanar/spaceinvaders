@@ -129,6 +129,14 @@ public abstract class Entity {
 		return (int) y;
 	}
 	
+	public int getWidth(){
+		return sprite.getWidth();
+	}
+	
+	public int getHeight(){
+		return sprite.getHeight();
+	}
+	
 	/**
 	 * Check if this entity collised with another.
 	 * 
