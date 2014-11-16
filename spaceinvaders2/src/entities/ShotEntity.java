@@ -1,5 +1,6 @@
 package entities;
 
+import missile.MissileManager;
 import base.Game;
 
 /**
@@ -7,13 +8,15 @@ import base.Game;
  * 
  * @author Kevin Glass
  */
-public class ShotEntity extends Entity {
+public abstract class ShotEntity extends Entity {
 	/** The vertical speed at which the players shot moves */
-	private double moveSpeed = -300;
-	/** The game in which this entity exists */
-	private Game game;
+	protected double moveSpeed = -300;
 	/** True if this shot has been "used", i.e. its hit something */
-	private boolean used = false;
+	protected boolean used = false;
+	
+	protected int degats=0;
+	
+	protected MissileManager manager;
 	
 	/**
 	 * Create a new shot from the player
@@ -23,11 +26,9 @@ public class ShotEntity extends Entity {
 	 * @param x The initial x location of the shot
 	 * @param y The initial y location of the shot
 	 */
-	public ShotEntity(Game game,String sprite,int x,int y) {
+	public ShotEntity(MissileManager manager,String sprite,int x,int y) {
 		super(sprite,x,y);
-		
-		this.game = game;
-		
+		this.manager = manager;
 		dy = moveSpeed;
 	}
 
@@ -41,9 +42,12 @@ public class ShotEntity extends Entity {
 		super.move(delta);
 		
 		// if we shot off the screen, remove ourselfs
-		if (y < -100) {
-			game.removeEntity(this);
-		}
+		if (y+getHeight() < 0 
+			|| y > 600 
+			|| x+getWidth() < 0 
+			|| x > 800) 
+		manager.destroyMissile(this);
+		
 	}
 	
 	/**
@@ -52,24 +56,10 @@ public class ShotEntity extends Entity {
 	 * 
 	 * @parma other The other entity with which we've collided
 	 */
-	public void collidedWith(Entity other) {
-		// prevents double kills, if we've already hit something,
-		// don't collide
-		if (used) {
-			return;
-		}
-		
-		// if we've hit an alien, kill it!
-		if (other instanceof AlienEntity) {
-			// remove the affected entities
-			game.removeEntity(this);
-			game.removeEntity(other);
-			
-			//NEED TO SAY WIN OR NOT
-			used = true;
-		}
-	}
 
+	public abstract void collidWithAlien(AlienEntity ae);
+	public abstract void collidWithShip(ShipEntity ship);
+	
     @Override
     public void doLogic() {
         // FIXME Auto-generated method stub

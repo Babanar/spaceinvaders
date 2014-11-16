@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import missile.MissileManager;
+
 import aliens.UsineAlien;
 
 import Player.PlayerShip;
@@ -45,22 +47,17 @@ public class Game extends Canvas {
 	/** True if the game is currently "running", i.e. the game loop is looping */
 	private boolean gameRunning = true;
 	
-	/** The list of all the entities that exist in our game */
-	private ArrayList<Entity> entities = new ArrayList<Entity>();
-	
-	/** The list of entities that need to be removed from the game this loop */
-	private ArrayList<Entity> removeList = new ArrayList<Entity>();
+
 	
 	private PlayerShip player;
 	
+	private MissileManager missiles;
 	
 	/** The message to display which waiting for a key press */
 	private String message = "";
 	/** True if we're holding up game play until a key has been pressed */
 	private boolean waitingForKeyPress = true;
-	/** True if game logic needs to be applied this loop, normally as a result of a game event */
-	private boolean logicRequiredThisLoop = false;
-	
+
 	private UsineAlien aliens;
 	/**
 	 * Construct our game and set it running.
@@ -119,8 +116,6 @@ public class Game extends Canvas {
 	 * create a new set.
 	 */
 	private void startGame() {
-		// clear out any existing entities and intialise a new set
-		entities.clear();
 		initEntities();
 		
 	}
@@ -131,30 +126,14 @@ public class Game extends Canvas {
 	 */
 	private void initEntities() {
 		// create the player ship and place it roughly in the center of the screen
-		player = new PlayerShip(this);
-		
+		missiles = new MissileManager();
+		player = new PlayerShip(this,missiles);
 		aliens.init();
 		
 	}
 	
-	/**
-	 * Notification from a game entity that the logic of the game
-	 * should be run at the next opportunity (normally as a result of some
-	 * game event)
-	 */
-	public void updateLogic() {
-		logicRequiredThisLoop = true;
-	}
-	
-	/**
-	 * Remove an entity from the game. The entity removed will
-	 * no longer move or be drawn.
-	 * 
-	 * @param entity The entity that should be removed
-	 */
-	public void removeEntity(Entity entity) {
-		removeList.add(entity);
-	}
+
+
 	
 	/**
 	 * Notification that the player has died. 
@@ -173,15 +152,7 @@ public class Game extends Canvas {
 		waitingForKeyPress = true;
 	}
 	
-	
-	/**
-	 * Attempt to fire a shot from the player. Its called "try"
-	 * since we must first check that the player can fire at this 
-	 * point, i.e. has he/she waited long enough between shots
-	 */
-	public void addEntity(Entity e) {
-		entities.add(e);
-	}
+
 	
 	/**
 	 * The main game loop. This loop is running during all game
@@ -201,8 +172,10 @@ public class Game extends Canvas {
 		while (gameRunning) {
 			
 			// WFKP VERIFICATION
-			if(waitingForKeyPress && !InputMonitor.getListEvent().isEmpty())
+			if(waitingForKeyPress && !InputMonitor.getListEvent().isEmpty()){
 				waitingForKeyPress = false;
+				startGame();
+			}
 			
 			// DELTA TIME DEPUIS LA DERNIÈRE FRAME
 			long delta = System.currentTimeMillis() - lastLoopTime;
@@ -215,46 +188,21 @@ public class Game extends Canvas {
 			
 			// UPDATE
 			if (!waitingForKeyPress) {
-				for(Entity entity : entities)
-					entity.move(delta);
 				player.update(delta);
 				aliens.update(delta);
+				missiles.update(delta);
 			}
 			
 			// COLLISION
-			for (int p=0;p<entities.size();p++) {
-				for (int s=p+1;s<entities.size();s++) {
-					Entity me = entities.get(p);
-					Entity him = entities.get(s);
-					
-					if (me.collidesWith(him)) {
-						me.collidedWith(him);
-						him.collidedWith(me);
-					}
-				}
-			}
+			//missiles.collidsTest(player);
+			missiles.collidsTest(aliens);
 			
 			// AFFICHAGE
-            for(Entity entity : entities)
-				entity.draw(g);
             player.draw(g);
             aliens.draw(g);
+            missiles.draw(g);
 			
-			// remove any entity that has been marked for clear up
-			entities.removeAll(removeList);
-			removeList.clear();
 
-			// if a game event has indicated that game logic should
-			// be resolved, cycle round every entity requesting that
-			// their personal logic should be considered.
-			if (logicRequiredThisLoop) {
-			    for(Entity entity : entities) {
-					entity.doLogic();
-				}
-				
-				logicRequiredThisLoop = false;
-			}
-			
 			// if we're waiting for an "any key" press then draw the 
 			// current message 
 			if (waitingForKeyPress) {

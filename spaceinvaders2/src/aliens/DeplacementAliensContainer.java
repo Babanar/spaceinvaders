@@ -20,4 +20,9 @@ public class DeplacementAliensContainer implements DeplacementAliens {
 			instance.setDirection(ae);
 	}
 
+	public void increaseSpeed() {
+		if(instance!=null)
+			instance.increaseSpeed();
+	}
+
 }

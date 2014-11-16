@@ -8,6 +8,8 @@ public interface DeplacementAliens {
 	public void updateMoveDirection();
 	
 	public void setDirection(AlienEntity ae);
+	
+	public void increaseSpeed();
 
 
 

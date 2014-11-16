@@ -1,6 +1,7 @@
 package entities;
 
 import aliens.DeplacementAliens;
+import aliens.UsineAlien;
 import base.Game;
 
 /**
@@ -11,10 +12,9 @@ import base.Game;
 public class AlienEntity extends Entity {
 	/** The speed at which the alient moves horizontally */
 	private double moveSpeed = 75;
-	/** The game in which the entity exists */
-	private Game game;
 	
 	private DeplacementAliens deplacement;
+	private UsineAlien commandant;
 	
 	/**
 	 * Create a new alien entity
@@ -24,10 +24,10 @@ public class AlienEntity extends Entity {
 	 * @param x The intial x location of this alien
 	 * @param y The intial y location of this alient
 	 */
-	public AlienEntity(Game game,String ref,int x,int y,DeplacementAliens da) {
+	public AlienEntity(UsineAlien ua,String ref,int x,int y,DeplacementAliens da) {
 		super(ref,x,y);
 		
-		this.game = game;
+		this.commandant = ua;
 		dx = -moveSpeed;
 		this.deplacement = da;
 	}
@@ -40,24 +40,12 @@ public class AlienEntity extends Entity {
 	public void move(long delta) {
 		deplacement.setDirection(this);
 		super.move(delta);
-	}
-	
-	/**
-	 * Update the game logic related to aliens
-	 */
-
-	public void doLogic() {
-		// swap over horizontal movement and move down the
-		// screen a bit
-		dx = -dx;
-		y += 10;
-		
-		// if we've reached the bottom of the screen then the player
-		// dies
 		if (y > 570) {
-			game.notifyDeath();
+			commandant.notifyWin();
 		}
 	}
+	
+
 	
 	/**
 	 * Notification that this alien has collided with another entity
@@ -66,5 +54,15 @@ public class AlienEntity extends Entity {
 	 */
 	public void collidedWith(Entity other) {
 		// collisions with aliens are handled elsewhere
+	}
+	
+	public void takeDamage(int degats){
+		commandant.destroyAlien(this);
+	}
+
+	@Override
+	public void doLogic() {
+		// TODO Stub de la méthode généré automatiquement
+		
 	}
 }

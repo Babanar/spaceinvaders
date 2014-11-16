@@ -60,6 +60,10 @@ public abstract class Entity {
 		y += (delta * dy) / 1000;
 	}
 	
+	public void moveFixe(float x, float y){
+		this.x+=x;
+		this.y+=y;
+	}
 	/**
 	 * Set the horizontal speed of this entity
 	 * 
@@ -136,6 +140,8 @@ public abstract class Entity {
 	public int getHeight(){
 		return sprite.getHeight();
 	}
+	
+	
 	
 	/**
 	 * Check if this entity collised with another.

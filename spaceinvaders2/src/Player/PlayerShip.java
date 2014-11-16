@@ -2,6 +2,8 @@ package Player;
 
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import missile.MissileHumain;
+import missile.MissileManager;
 
 import base.Game;
 import base.InputMonitor;
@@ -13,15 +15,15 @@ public class PlayerShip {
 
 	private ShipEntity ship;
 	private long vitesse = 300;
-	private Game game;
+	private MissileManager missileManager;
 	
 	private long lastFire = 0;
 	private long firingInterval = 500;
 	
-	public PlayerShip(Game game) {
+	public PlayerShip(Game game,MissileManager missileManager) {
 		
 		ship = new ShipEntity(game,"sprites/ship.gif",370,550);
-		this.game = game;
+		this.missileManager = missileManager;
 	}
 
 	public void update(long delta){
@@ -55,8 +57,11 @@ public class PlayerShip {
 		
 		// if we waited long enough, create the shot entity, and record the time.
 		lastFire = System.currentTimeMillis();
-		ShotEntity shot = new ShotEntity(game,"sprites/shot.gif",ship.getX()+10,ship.getY()-30);
-		game.addEntity(shot);
+		ShotEntity shot = new MissileHumain(missileManager,"sprites/shot.gif",ship.getX()+10,ship.getY()-30);
+		missileManager.addShot(shot);
 	}
-
+	
+	public ShipEntity getEntity(){
+		return ship;
+	}
 }

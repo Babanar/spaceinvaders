@@ -19,6 +19,7 @@ public class DeplacementAliensDefault implements DeplacementAliens {
 	public void updateMoveDirection(){
 		if(needChangementDirection){
 			vx = -vx;
+			commandant.goBack();
 			needChangementDirection=false;
 		}
 	}
@@ -31,6 +32,9 @@ public class DeplacementAliensDefault implements DeplacementAliens {
 		ae.setVerticalMovement(vy);
 	}
 
+	public void increaseSpeed(){
+		vx *=1.03;
+	}
 
 
 }
