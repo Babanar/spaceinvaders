@@ -10,7 +10,7 @@ import base.Game;
  */
 public abstract class ShotEntity extends Entity {
 	/** The vertical speed at which the players shot moves */
-	protected double moveSpeed = -300;
+	protected double moveSpeed;
 	/** True if this shot has been "used", i.e. its hit something */
 	protected boolean used = false;
 	

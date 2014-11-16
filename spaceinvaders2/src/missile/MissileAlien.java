@@ -6,13 +6,13 @@ import entities.Entity;
 import entities.ShipEntity;
 import entities.ShotEntity;
 
-public class MissileHumain extends ShotEntity {
+public class MissileAlien extends ShotEntity {
 
 	
 	
-	public MissileHumain(MissileManager manager, int x, int y) {
+	public MissileAlien(MissileManager manager, int x, int y) {
 		super(manager, "sprites/shot.gif", x, y);
-		 moveSpeed = -300;
+		 moveSpeed = 300;
 		 degats = 10;
 		 dy=moveSpeed;
 	}
@@ -27,14 +27,7 @@ public class MissileHumain extends ShotEntity {
 
 
 	public void collidWithAlien(AlienEntity ae) {
-		if (used) 
-			return;
-		
-		
-			ae.takeDamage(degats);
-			manager.destroyMissile(this);
-			
-			used = true;
+
 	}
 
 
@@ -43,7 +36,12 @@ public class MissileHumain extends ShotEntity {
 
 	@Override
 	public void collidWithShip(ShipEntity ship) {
-		return;
+		if (used) 
+			return;
+		
+		ship.takeDamage(degats);
+		manager.destroyMissile(this);	
+		used = true;
 	}
 
 }

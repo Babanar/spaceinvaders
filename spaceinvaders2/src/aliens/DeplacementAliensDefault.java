@@ -13,7 +13,6 @@ public class DeplacementAliensDefault implements DeplacementAliens {
 	public DeplacementAliensDefault(UsineAlien ua) {
 		commandant = ua;
 		vx = 75;
-		vy = 0;
 	}
 	
 	public void updateMoveDirection(){

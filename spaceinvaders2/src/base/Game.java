@@ -18,6 +18,7 @@ import missile.MissileManager;
 
 import aliens.UsineAlien;
 
+import Niveau.*;
 import Player.PlayerShip;
 
 import entities.AlienEntity;
@@ -59,12 +60,14 @@ public class Game extends Canvas {
 	private boolean waitingForKeyPress = true;
 
 	private UsineAlien aliens;
+	
+	private int level = 2;
 	/**
 	 * Construct our game and set it running.
 	 */
 	public Game() {
 		
-		aliens=new UsineAlien(this);
+		
 		addKeyListener(InputMonitor.instance);
 		// create a frame to contain our game
 		JFrame container = new JFrame("Space Invaders 101");
@@ -126,9 +129,32 @@ public class Game extends Canvas {
 	 */
 	private void initEntities() {
 		// create the player ship and place it roughly in the center of the screen
-		missiles = new MissileManager();
-		player = new PlayerShip(this,missiles);
-		aliens.init();
+		switch(level){
+		case 0:
+			missiles = new MissileManager();
+			player = new PlayerShip(this,missiles);
+			aliens=new Niveau1(this,missiles);
+			aliens.init();
+		break;
+		case 1:
+			missiles = new MissileManager();
+			player = new PlayerShip(this,missiles);
+			aliens=new Niveau2(this,missiles);
+			aliens.init();		
+		break;
+		case 2:
+			missiles = new MissileManager();
+			player = new PlayerShip(this,missiles);
+			aliens=new Niveau3(this,missiles);
+			aliens.init();		
+		break;
+		default:
+			missiles = new MissileManager();
+			player = new PlayerShip(this,missiles);
+			aliens=new UsineAlien(this,missiles);
+			aliens.init();
+		break;
+		}
 		
 	}
 	
@@ -141,6 +167,7 @@ public class Game extends Canvas {
 	public void notifyDeath() {
 		message = "Oh no! They got you, try again?";
 		waitingForKeyPress = true;
+		level = 0;
 	}
 	
 	/**
@@ -150,6 +177,7 @@ public class Game extends Canvas {
 	public void notifyWin() {
 		message = "Well done! You Win!";
 		waitingForKeyPress = true;
+		level ++;
 	}
 	
 
@@ -176,6 +204,7 @@ public class Game extends Canvas {
 				waitingForKeyPress = false;
 				startGame();
 			}
+			InputMonitor.resetListEvent();
 			
 			// DELTA TIME DEPUIS LA DERNIÈRE FRAME
 			long delta = System.currentTimeMillis() - lastLoopTime;
@@ -194,7 +223,7 @@ public class Game extends Canvas {
 			}
 			
 			// COLLISION
-			//missiles.collidsTest(player);
+			missiles.collidsTest(player);
 			missiles.collidsTest(aliens);
 			
 			// AFFICHAGE

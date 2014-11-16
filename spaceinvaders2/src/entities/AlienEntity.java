@@ -1,5 +1,7 @@
 package entities;
 
+import missile.MissileAlien;
+import missile.MissileManager;
 import aliens.DeplacementAliens;
 import aliens.UsineAlien;
 import base.Game;
@@ -15,6 +17,7 @@ public class AlienEntity extends Entity {
 	
 	private DeplacementAliens deplacement;
 	private UsineAlien commandant;
+
 	
 	/**
 	 * Create a new alien entity
@@ -26,7 +29,7 @@ public class AlienEntity extends Entity {
 	 */
 	public AlienEntity(UsineAlien ua,String ref,int x,int y,DeplacementAliens da) {
 		super(ref,x,y);
-		
+
 		this.commandant = ua;
 		dx = -moveSpeed;
 		this.deplacement = da;
@@ -45,7 +48,11 @@ public class AlienEntity extends Entity {
 		}
 	}
 	
-
+	public void update(long delta){
+		move(delta);
+	}
+	
+	
 	
 	/**
 	 * Notification that this alien has collided with another entity

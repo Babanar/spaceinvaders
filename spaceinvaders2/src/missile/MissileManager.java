@@ -45,7 +45,7 @@ public class MissileManager {
 		ShipEntity ship = player.getEntity();
 		for(ShotEntity s : missiles)
 			if(s.collidesWith(ship)){
-				s.collidedWith(ship);
+				s.collidWithShip(ship);
 				ship.collidedWith(s);
 			}
 	}

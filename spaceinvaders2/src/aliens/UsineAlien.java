@@ -4,6 +4,8 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import missile.MissileManager;
+
 import entities.AlienEntity;
 import entities.ShotEntity;
 
@@ -11,13 +13,15 @@ import entities.ShotEntity;
 import base.Game;
 
 public class UsineAlien {
-	private Game game;
-	private ArrayList<AlienEntity> aliens;
-	private ArrayList<AlienEntity> aliensToRemove;
-	private DeplacementAliensContainer deplacement;
-	int etape=0;
-	public UsineAlien(Game game) {
+	protected Game game;
+	protected ArrayList<AlienEntity> aliens;
+	protected ArrayList<AlienEntity> aliensToRemove;
+	protected DeplacementAliensContainer deplacement;
+	protected MissileManager missiles;
+	protected int etape=0;
+	public UsineAlien(Game game,MissileManager missiles) {
 		this.game = game;
+		this.missiles = missiles;
 		aliens=new ArrayList<>();
 		aliensToRemove=new ArrayList<>();
 		deplacement = new DeplacementAliensContainer();
@@ -27,11 +31,6 @@ public class UsineAlien {
 		aliens.clear();
 		aliensToRemove.clear();
 		deplacement.setInstance(new DeplacementAliensDefault(this));
-		for (int row=0;row<3;row++) {
-			for (int x=0;x<10;x++) {
-				aliens.add(new AlienEntity(this,"sprites/alien.gif",100+(x*50),(50)+row*30,deplacement));
-			}
-		}
 	}
 	
 	public void update(long delta){
@@ -40,11 +39,13 @@ public class UsineAlien {
 		aliensToRemove.clear();
 		deplacement.updateMoveDirection();
 		for(AlienEntity alien : aliens)
-			alien.move(delta);
-		if(count()<=5&&etape==0){
-			etape++;
-			deplacement.setInstance(new DeplacementAliensAleatoire(this));
-		}
+			alien.update(delta);
+		
+		if(count()==0)
+			game.notifyWin();
+		
+
+		
 	}
 	
 	public void draw(Graphics g){

@@ -64,4 +64,8 @@ public class ShipEntity extends Entity {
         // FIXME Auto-generated method stub
         
     }
+    
+    public void takeDamage(int damage){
+    	game.notifyDeath();
+    }
 }

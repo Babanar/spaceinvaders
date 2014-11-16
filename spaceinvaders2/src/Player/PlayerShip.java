@@ -57,7 +57,7 @@ public class PlayerShip {
 		
 		// if we waited long enough, create the shot entity, and record the time.
 		lastFire = System.currentTimeMillis();
-		ShotEntity shot = new MissileHumain(missileManager,"sprites/shot.gif",ship.getX()+10,ship.getY()-30);
+		ShotEntity shot = new MissileHumain(missileManager,ship.getX()+10,ship.getY()-30);
 		missileManager.addShot(shot);
 	}
 	
